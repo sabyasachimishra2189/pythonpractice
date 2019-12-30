@@ -1,3 +1,4 @@
+#Java is also  similar
 def subset_sum(numbers, target, partial=[]):
     s = sum(partial)  # find the sum from sublist
 
@@ -14,6 +15,21 @@ def subset_sum(numbers, target, partial=[]):
         # from the original list of (ith elements on each iterations  )
 
 
-arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+arr = [1,2,3,4,5,6,7,8,9,-11]
 n = 10
+sorted()
 subset_sum(arr, n, [])
+
+#output
+'''
+sum([1, 2, 3, 4])=10
+sum([1, 2, 7])=10
+sum([1, 3, 6])=10
+sum([1, 4, 5])=10
+sum([1, 9])=10
+sum([2, 3, 5])=10
+sum([2, 8])=10
+sum([3, 7])=10
+sum([4, 6])=10
+'''
+
