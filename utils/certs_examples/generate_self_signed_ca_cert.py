@@ -107,7 +107,7 @@ def cert_name(common_name):
         x509.NameAttribute(NameOID.COUNTRY_NAME, "IN"),
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "KA"),
         x509.NameAttribute(NameOID.LOCALITY_NAME, "bangalore"),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Mobileiron"),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Org"),
         x509.NameAttribute(NameOID.COMMON_NAME, common_name),
     ])
 
