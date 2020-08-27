@@ -67,7 +67,7 @@ def cert_builder(
 
 
 def cert_key_usage(**kwargs):
-    required = [
+    all_key_usages = [
         'digital_signature',
         'content_commitment',
         'key_encipherment',
@@ -78,26 +78,26 @@ def cert_key_usage(**kwargs):
         'encipher_only',
         'decipher_only',
     ]
-    for name in required:
+    for name in all_key_usages:
         kwargs.setdefault(name, False)
 
     return x509.KeyUsage(**kwargs)
 
 
 def cert_extended_key_usage(**kwargs):
-    usages = {
+    extended_key_usages = {
         'server_auth': x509.oid.ExtendedKeyUsageOID.SERVER_AUTH,
         'client_auth': x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH,
         'code_signing': x509.oid.ExtendedKeyUsageOID.CODE_SIGNING,
         'email_protection': x509.oid.ExtendedKeyUsageOID.EMAIL_PROTECTION
-        # https://cryptography.io/en/latest/_modules/cryptography/x509/oid/#ExtendedKeyUsageOID
-        # for details.
+        # ref:: https://cryptography.io/en/latest/_modules/cryptography/x509/oid/#ExtendedKeyUsageOID for details
+
     }
     res = []
     for k, v in kwargs.items():
-        assert k in usages, "specified exteneded key usage is not supported"
+        assert k in extended_key_usages, "specified exteneded key usage is not supported"
         if v:
-            res.append(usages[k])
+            res.append(extended_key_usages[k])
 
     return x509.ExtendedKeyUsage(res)
 
@@ -204,7 +204,6 @@ def convert_cert_to_p12(cert, root_cert_key, password="password"):
 if __name__ == '__main__':
     key = generate_rsa_private_key()
     root_cert = create_root_ca_cert_pem(key)
+    print(root_cert.decode("utf-8"))
     with open("root_ca.pem", "wb") as f:
-        f.write(
-            root_cert
-        )
+        f.write(root_cert)
