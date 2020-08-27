@@ -139,7 +139,7 @@ def ca_cert_builder(public_key,
     )
 
 
-def external_cert_builder(
+def user_cert_builder(
         public_key,
         common_name="User cert",
         issuer=None,
@@ -201,11 +201,10 @@ def convert_cert_to_p12(cert, root_cert_key, password="password"):
                                           serialization.BestAvailableEncryption(bytes(password, "utf-8")))
 
 
-key = generate_rsa_private_key()
-root_cert = create_root_ca_cert_pem(key)
-
-
-with open("root_ca.pem", "wb") as f:
-    f.write(
-        root_cert
-    )
+if __name__ == '__main__':
+    key = generate_rsa_private_key()
+    root_cert = create_root_ca_cert_pem(key)
+    with open("root_ca.pem", "wb") as f:
+        f.write(
+            root_cert
+        )
