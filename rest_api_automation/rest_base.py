@@ -46,7 +46,7 @@ class Rest_Base:
         self.__log_response_details(response)
         return response
 
-    def post(self, url, data, headers, params=None, description=None):
+    def post(self, url, data, headers, params=None):
         self.__log_request_details(url=url, headers=headers, data=data, params=params)
         response = requests.post(url=url, data=data, headers=headers, params=params)
         self.__log_response_details(response)
