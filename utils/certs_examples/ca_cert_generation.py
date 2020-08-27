@@ -57,7 +57,7 @@ def cert_builder(
     if extended_key_usage is not None:
         builder = builder.add_extension(extended_key_usage, critical=True)
 
-    if subject_alternative_names is not None:
+    if subject_alternative_names is not None and len(subject_alternative_names)>0:
         builder = builder.add_extension(
             x509.SubjectAlternativeName(subject_alternative_names),
             critical=True
@@ -112,6 +112,19 @@ def cert_name(common_name):
     ])
 
 
+def get_subject_alternate_names(**kwargs):
+    if len(kwargs) == 0:
+        return None
+    res = []
+    for k, v in kwargs.items():
+        if k.lower() == 'rfc822name':
+            res.append(x509.RFC822Name(v))
+        if k.lower() == "dnsname":
+            res.append(x509.DNSName(v))
+
+    return res
+
+
 def ca_cert_builder(public_key,
                     common_name="Root CA",
                     issuer=None,
@@ -148,7 +161,7 @@ def user_cert_builder(
         key_usage=cert_key_usage(
             key_cert_sign=False, digital_signature=True, key_encipherment=True),
         extended_key_usage=cert_extended_key_usage(server_auth=True),
-        subject_alternative_names=None,
+        subject_alternative_names=get_subject_alternate_names(dnsname='localhost'),
         not_valid_before=None,
         not_valid_after=None,
         valid_days=3650,
