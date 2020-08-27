@@ -14,6 +14,8 @@ def get_number_of_islands(matrix, row, col, visited):
     mark the cell as visited in the visited array
     recursive call get_number_of_islands() on each adjacent cell
     return 1
+    
+    ref geekforgeeks
 
 '''
 
