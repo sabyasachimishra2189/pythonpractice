@@ -57,7 +57,7 @@ def cert_builder(
     if extended_key_usage is not None:
         builder = builder.add_extension(extended_key_usage, critical=True)
 
-    if subject_alternative_names is not None and len(subject_alternative_names)>0:
+    if subject_alternative_names is not None and len(subject_alternative_names) > 0:
         builder = builder.add_extension(
             x509.SubjectAlternativeName(subject_alternative_names),
             critical=True
@@ -113,6 +113,17 @@ def cert_name(common_name):
 
 
 def get_subject_alternate_names(**kwargs):
+    """
+    "otherName",
+    "rfc822Name",
+    "dNSName",
+    "x400Address",
+    "directoryName",
+    "ediPartyName",
+    "uniformResourceIdentifier",
+    "iPAddress",
+    "registeredID"
+    """
     if len(kwargs) == 0:
         return None
     res = []
