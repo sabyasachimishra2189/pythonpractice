@@ -113,25 +113,23 @@ def cert_name(common_name):
 
 
 def get_subject_alternate_names(**kwargs):
-    """
-    "otherName",
-    "rfc822Name",
-    "dNSName",
-    "x400Address",
-    "directoryName",
-    "ediPartyName",
-    "uniformResourceIdentifier",
-    "iPAddress",
-    "registeredID"
-    """
+
+    subject_alt_names_list = {"othername": x509.OtherName,
+                              "rfc822name": x509.RFC822Name,
+                              "dnsname": x509.DNSName,
+                              "directoryname": x509.DirectoryName,
+                              "uniformresourceidentifier": x509.UniformResourceIdentifier,
+                              "ipaddress": x509.IPAddress,
+                              "registeredid": x509.RegisteredID}
+
     if len(kwargs) == 0:
         return None
     res = []
     for k, v in kwargs.items():
-        if k.lower() == 'rfc822name':
-            res.append(x509.RFC822Name(v))
-        if k.lower() == "dnsname":
-            res.append(x509.DNSName(v))
+        assert k.lower() in subject_alt_names_list ,"subject_alternate_names not supported." \
+                                            "Please provide from below list:\n"+",".join(list(subject_alt_names_list.keys()))
+
+        res.append(subject_alt_names_list[k](v))
 
     return res
 
@@ -226,7 +224,6 @@ def convert_cert_to_p12(cert, root_cert_key, password="password"):
 
 
 if __name__ == '__main__':
-
     key = generate_rsa_private_key()
     root_cert = create_root_ca_cert_pem(key)
     print(root_cert.decode("utf-8"))
