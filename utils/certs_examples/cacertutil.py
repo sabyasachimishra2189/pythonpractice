@@ -6,8 +6,10 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.serialization.pkcs12 import serialize_key_and_certificates
 from cryptography.x509.oid import NameOID
+from os import path
 
 default_backend = cryptography.hazmat.backends.default_backend()
 
@@ -113,7 +115,6 @@ def cert_name(common_name):
 
 
 def get_subject_alternate_names(**kwargs):
-
     subject_alt_names_list = {"othername": x509.OtherName,
                               "rfc822name": x509.RFC822Name,
                               "dnsname": x509.DNSName,
@@ -126,8 +127,9 @@ def get_subject_alternate_names(**kwargs):
         return None
     res = []
     for k, v in kwargs.items():
-        assert k.lower() in subject_alt_names_list ,"subject_alternate_names not supported." \
-                                            "Please provide from below list:\n"+",".join(list(subject_alt_names_list.keys()))
+        assert k.lower() in subject_alt_names_list, "subject_alternate_names not supported." \
+                                                    "Please provide from below list:\n" + ",".join(
+            list(subject_alt_names_list.keys()))
 
         res.append(subject_alt_names_list[k](v))
 
@@ -190,11 +192,13 @@ def user_cert_builder(
 
 
 def generate_rsa_private_key(key_size=2048, public_exponent=65537):
-    return rsa.generate_private_key(
-        public_exponent=public_exponent,
-        key_size=key_size,
+    cert_key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
         backend=default_backend
+
     )
+    return cert_key
 
 
 def sign_cert(cert_builder, private_key, alg=None):
@@ -223,9 +227,55 @@ def convert_cert_to_p12(cert, root_cert_key, password="password"):
                                           serialization.BestAvailableEncryption(bytes(password, "utf-8")))
 
 
+def save_key(key_data, file_name, password="password"):
+    with open(file_name, "wb") as f:
+        f.write(key_data.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.BestAvailableEncryption(bytes(password, "utf-8"))
+        ))
+
+
+def load_key(filename, password="password"):
+    with open(filename, 'rb') as pem_in:
+        pemlines = pem_in.read()
+    private_key = load_pem_private_key(pemlines, bytes(password,"utf-8"), default_backend)
+    return private_key
+
+
 if __name__ == '__main__':
-    key = generate_rsa_private_key()
-    root_cert = create_root_ca_cert_pem(key)
-    print(root_cert.decode("utf-8"))
-    with open("root_ca.pem", "wb") as f:
-        f.write(root_cert)
+   #Sample usage
+   #todo logging
+    ca_key_file = "ca_cert_key.key"
+    client_cert_key_file = "client_key.key"
+    key_password = "123456"
+
+    if path.isfile(ca_key_file):
+        root_key = load_key(filename=ca_key_file, password=key_password)
+    else:
+        root_key = generate_rsa_private_key()
+        save_key(root_key,ca_key_file, key_password)
+
+    if path.isfile(client_cert_key_file):
+        client_key = load_key(client_cert_key_file,key_password)
+    else:
+        client_key = generate_rsa_private_key()
+        save_key(client_key,client_cert_key_file,key_password)
+
+    ca = sign_cert(ca_cert_builder(root_key.public_key(),
+                                   key_usage=cert_key_usage(key_cert_sign=True, key_encipherment=True,
+                                                            digital_signature=True),
+                                   extended_key_usage=cert_extended_key_usage(email_protection=True)), root_key)
+    pem_file_data = convert_to_pem(ca)
+    with open("ca_cert.pem", "wb") as f:
+        f.write(pem_file_data)
+
+    cert = sign_cert(user_cert_builder(client_key.public_key(),
+                                       common_name="usercert", issuer=ca.issuer,
+                                       subject_alternative_names=get_subject_alternate_names(
+                                           rfc822name="testemail@example.com")), root_key)
+
+    client_cert_p12Data = convert_cert_to_p12(cert, client_key, key_password)
+
+    with open("usercert.p12", "wb") as f:
+        f.write(client_cert_p12Data)
