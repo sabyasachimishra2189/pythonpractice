@@ -226,6 +226,7 @@ def convert_cert_to_p12(cert, root_cert_key, password="password"):
 
 
 if __name__ == '__main__':
+
     key = generate_rsa_private_key()
     root_cert = create_root_ca_cert_pem(key)
     print(root_cert.decode("utf-8"))
